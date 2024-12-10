@@ -20,6 +20,18 @@ class Cluster : CustomStringConvertible {
         }
         return containers
     }
+
+    func getContainersFull() -> [(Node, Pod, Container)] {
+        var containers = [(Node, Pod, Container)]()
+        for node in nodes {
+            for pod in node.pods {
+                for container in pod.containers {
+                    containers.append((node, pod, container))
+                }
+            }
+        }
+        return containers
+    }
 }
 
 class Node : CustomStringConvertible {
@@ -177,17 +189,13 @@ func parseClusterStatus(fileContent: String) -> Cluster {
 }
 
 func Q1(cluster: Cluster) {
-    for node in cluster.nodes {
-        for pod in node.pods {
-            for container in pod.containers {
-                if container.status == .running {
-                    print("Le conteneur \(container.name) dans le pod \(pod.id) sur le noeud \(node.id) fonctionne normalement.")
-                } else if container.status == .stopped {
-                    print("Le conteneur \(container.name) dans le pod \(pod.id) sur le noeud \(node.id) est arrêté.")
-                } else if container.status == .crashed {
-                    print("Le conteneur \(container.name) dans le pod \(pod.id) sur le noeud \(node.id) a crashé.")
-                }
-            }
+    for (node, pod, container) in cluster.getContainersFull() {
+        if container.status == .running {
+            print("Le conteneur \(container.name) dans le pod \(pod.id) sur le noeud \(node.id) fonctionne normalement.")
+        } else if container.status == .stopped {
+            print("Le conteneur \(container.name) dans le pod \(pod.id) sur le noeud \(node.id) est arrêté.")
+        } else if container.status == .crashed {
+            print("Le conteneur \(container.name) dans le pod \(pod.id) sur le noeud \(node.id) a crashé.")
         }
     }
 }
@@ -211,20 +219,16 @@ func Q3(cluster: Cluster) {
     var stoppedContainers = 0
     var crashedContainers = 0
 
-    for node in cluster.nodes {
-        for pod in node.pods {
-            for container in pod.containers {
-                switch container.status {
-                case .running:
-                    runningContainers += 1
-                case .stopped:
-                    stoppedContainers += 1
-                case .crashed:
-                    crashedContainers += 1
-                default:
-                    break
-                }
-            }
+    for container in cluster.getContainers() {
+        switch container.status {
+        case .running:
+            runningContainers += 1
+        case .stopped:
+            stoppedContainers += 1
+        case .crashed:
+            crashedContainers += 1
+        default:
+            break
         }
     }
 
@@ -254,36 +258,32 @@ func getRessourcesMaps() -> [String: RessourcesNeeded] {
 }
 
 func Q5(cluster: Cluster) {
-    for node in cluster.nodes {
-        for pod in node.pods {
-            for container in pod.containers {
-                if container.status == .crashed {
-                    // Query needed ressources for this container
-                    let ressourcesMap = getRessourcesMaps()
-                    let ressourcesNeededOpt = ressourcesMap[container.name]
-                    if ressourcesNeededOpt == nil {
-                        print("Le conteneur \(container.name) a crashé mais nous ne connaissons pas les ressources qu'il demande.")
-                        continue
-                    }
-                    let ressourcesNeeded = ressourcesNeededOpt!
+    for (node, _, container) in cluster.getContainersFull() {
+        if container.status == .crashed {
+            // Query needed ressources for this container
+            let ressourcesMap = getRessourcesMaps()
+            let ressourcesNeededOpt = ressourcesMap[container.name]
+            if ressourcesNeededOpt == nil {
+                print("Le conteneur \(container.name) a crashé mais nous ne connaissons pas les ressources qu'il demande.")
+                continue
+            }
+            let ressourcesNeeded = ressourcesNeededOpt!
 
-                    // Query node used ressources
-                    var (usedCPU, usedRAM) = node.usedResources()
-                    
-                    // Calculate needed total node ressources to run the container
-                    usedCPU -= container.cpu
-                    usedRAM -= container.ram
-                    usedCPU += ressourcesNeeded.cpu
-                    usedRAM += ressourcesNeeded.ram
+            // Query node used ressources
+            var (usedCPU, usedRAM) = node.usedResources()
+            
+            // Calculate needed total node ressources to run the container
+            usedCPU -= container.cpu
+            usedRAM -= container.ram
+            usedCPU += ressourcesNeeded.cpu
+            usedRAM += ressourcesNeeded.ram
 
-                    // Check if node has enough ressources
-                    if usedCPU <= node.cpu && usedRAM <= node.ram {
-                        print("Le conteneur \(container.name) a crashé mais le noeud a suffisamment de ressources pour le redémarrer.")
-                        container.status = .running
-                    } else {
-                        print("Le conteneur \(container.name) a crashé et le noeud n'a pas suffisamment de ressources pour le redémarrer.")
-                    }
-                }
+            // Check if node has enough ressources
+            if usedCPU <= node.cpu && usedRAM <= node.ram {
+                print("Le conteneur \(container.name) a crashé mais le noeud a suffisamment de ressources pour le redémarrer.")
+                container.status = .running
+            } else {
+                print("Le conteneur \(container.name) a crashé et le noeud n'a pas suffisamment de ressources pour le redémarrer.")
             }
         }
     }

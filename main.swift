@@ -36,7 +36,6 @@ class Pod : CustomStringConvertible {
 enum ContainerStatus: String, CustomStringConvertible {
     case running = "running"
     case stopped = "stopped"
-    case paused = "paused"
     case crashed = "crashed"
     case unknown = "unknown"
 
@@ -136,5 +135,17 @@ func parseClusterStatus(fileContent: String) -> [Node] {
 // Example usage
 if let fileContent = try? String(contentsOfFile: "kube_status.txt", encoding: .utf8) {
     let res = parseClusterStatus(fileContent: fileContent)
-    print(res)
+    for node in res {
+        for pod in node.pods {
+            for container in pod.containers {
+                if container.status == .running {
+                    print("Le conteneur \(container.name) dans le pod \(pod.id) sur le noeud \(node.id) fonctionne normalement.")
+                } else if container.status == .stopped {
+                    print("Le conteneur \(container.name) dans le pod \(pod.id) sur le noeud \(node.id) est arrêté.")
+                } else if container.status == .crashed {
+                    print("Le conteneur \(container.name) dans le pod \(pod.id) sur le noeud \(node.id) a crashé.")
+                }
+            }
+        }
+    }
 }

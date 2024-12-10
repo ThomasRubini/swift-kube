@@ -1,22 +1,54 @@
 import Foundation
 
-struct Node {
+class Node : CustomStringConvertible {
     var id: Int
     var cpu: Int
     var ram: Int
     var pods: [Pod]
+
+    init(id: Int, cpu: Int, ram: Int, pods: [Pod]) {
+        self.id = id
+        self.cpu = cpu
+        self.ram = ram
+        self.pods = pods
+    }
+
+    var description: String {
+        return "Node \(id) - CPU: \(cpu), RAM: \(ram), Pods: \(pods)"
+    }
+    
 }
 
-struct Pod {
+class Pod : CustomStringConvertible {
     var id: Int
     var containers: [Container]
+
+    init(id: Int, containers: [Container]) {
+        self.id = id
+        self.containers = containers
+    }
+
+    var description: String {
+        return "Pod \(id) - Containers: \(containers)"
+    }
 }
 
-struct Container {
+class Container : CustomStringConvertible {
     var name: String
     var status: String
     var cpu: Int
     var ram: Int
+
+    init(name: String, status: String, cpu: Int, ram: Int) {
+        self.name = name
+        self.status = status
+        self.cpu = cpu
+        self.ram = ram
+    }
+
+    var description: String {
+        return "Container \(name) - Status: \(status), CPU: \(cpu), RAM: \(ram)"
+    }
 }
 
 func parseContainerStatus(line: String) -> Container {
@@ -54,7 +86,7 @@ func parseClusterStatus(fileContent: String) -> [Node] {
             let cpu = Int(resources[0].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!
             let ram = Int(resources[1].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!
 
-            if var currentNode = currentNode {
+            if let currentNode = currentNode {
                 currentNode.cpu = cpu
                 currentNode.ram = ram
             } else {
@@ -72,7 +104,7 @@ func parseClusterStatus(fileContent: String) -> [Node] {
         // Check for container information
         else if trimmedLine.hasPrefix("Container:") {
             let container = parseContainerStatus(line: trimmedLine)
-            if var currentPod = currentPod {
+            if let currentPod = currentPod {
                 currentPod.containers.append(container)
             } else {
                 print("`Container:` line found without Pod")

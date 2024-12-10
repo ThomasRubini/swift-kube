@@ -14,7 +14,7 @@ class Node : CustomStringConvertible {
     }
 
     var description: String {
-        return "Node \(id) - CPU: \(cpu), RAM: \(ram), Pods: \(pods)"
+        return "Node(id: \(id), cpu: \(cpu), ram: \(ram), pods: \(pods))"
     }
     
 }
@@ -29,7 +29,7 @@ class Pod : CustomStringConvertible {
     }
 
     var description: String {
-        return "Pod \(id) - Containers: \(containers)"
+        return "Pod(id: \(id), containers: \(containers))"
     }
 }
 
@@ -58,7 +58,7 @@ class Container : CustomStringConvertible {
     }
 
     var description: String {
-        return "Container \(name) - Status: \(status), CPU: \(cpu), RAM: \(ram)"
+        return "Container(name: \(name), status: \(status), cpu: \(cpu), ram: \(ram))"
     }
 }
 

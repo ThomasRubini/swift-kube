@@ -279,6 +279,29 @@ func Q5(cluster: Cluster) {
     }
 }
 
+func getContainersFiltered(cluster: Cluster, predicate : (Container) -> Bool) -> [Container] {
+    var containers = [Container]()
+    for node in cluster.nodes {
+        for pod in node.pods {
+            for container in pod.containers {
+                if predicate(container) {
+                    containers.append(container)
+                }
+            }
+        }
+    }
+    return containers
+}
+
+func Q6(cluster: Cluster, wantedType: String) {
+    let containers = getContainersFiltered(cluster: cluster, predicate: { container in
+        return container.name == wantedType
+    })
+
+
+    print("Nombre de conteneurs de type \(wantedType): \(containers.count)")
+}
+
 func main() {
     let fileContentOpt = try? String(contentsOfFile: "kube_status.txt", encoding: .utf8)
     if fileContentOpt == nil {
@@ -297,6 +320,8 @@ func main() {
     Q4(cluster: cluster)
     print("--------------------")
     Q5(cluster: cluster)
+    print("--------------------")
+    Q6(cluster: cluster, wantedType: "postgres_db")
 
 }
 

@@ -1,5 +1,17 @@
 import Foundation
 
+class Cluster : CustomStringConvertible {
+    var nodes: [Node]
+
+    init(nodes: [Node]) {
+        self.nodes = nodes
+    }
+
+    var description: String {
+        return "Cluster(nodes: \(nodes))"
+    }
+}
+
 class Node : CustomStringConvertible {
     var id: Int
     var cpu: Int
@@ -96,7 +108,7 @@ func parseNodeHeader(line: String) -> Node {
 }
 
 // Récupération du statut du cluster
-func parseClusterStatus(fileContent: String) -> [Node] {
+func parseClusterStatus(fileContent: String) -> Cluster {
 
     var nodes = [Node]()
     var currentNode: Node?
@@ -139,12 +151,11 @@ func parseClusterStatus(fileContent: String) -> [Node] {
             }
         }
     }
-    return nodes
+    return Cluster(nodes: nodes)
 }
 
-func Q1(fileContent: String) {
-    let res = parseClusterStatus(fileContent: fileContent)
-    for node in res {
+func Q1(cluster: Cluster) {
+    for node in cluster.nodes {
         for pod in node.pods {
             for container in pod.containers {
                 if container.status == .running {
@@ -159,9 +170,8 @@ func Q1(fileContent: String) {
     }
 }
 
-func Q2(fileContent: String) {
-    let res = parseClusterStatus(fileContent: fileContent)
-    for node in res {
+func Q2(cluster: Cluster) {
+    for node in cluster.nodes {
         for pod in node.pods {
             var totalCpu = 0
             var totalRam = 0
@@ -174,13 +184,12 @@ func Q2(fileContent: String) {
     }
 }
 
-func Q3(fileContent: String) {
-    let res = parseClusterStatus(fileContent: fileContent)
+func Q3(cluster: Cluster) {
     var runningContainers = 0
     var stoppedContainers = 0
     var crashedContainers = 0
 
-    for node in res {
+    for node in cluster.nodes {
         for pod in node.pods {
             for container in pod.containers {
                 switch container.status {
@@ -203,9 +212,8 @@ func Q3(fileContent: String) {
     print("Nombre de conteneurs crashés: \(crashedContainers)")
 }
 
-func Q4(fileContent: String) {
-    let res = parseClusterStatus(fileContent: fileContent)
-    for node in res {
+func Q4(cluster: Cluster) {
+    for node in cluster.nodes {
         print("Le noeud \(node.id) a \(node.cpu) CPUs et \(node.ram) RAM disponibles.")
     }
 }
@@ -217,14 +225,15 @@ func main() {
         return
     }
     let fileContent = fileContentOpt!
+    let cluster = parseClusterStatus(fileContent: fileContent)
 
-    Q1(fileContent: fileContent)
+    Q1(cluster: cluster)
     print("--------------------")
-    Q2(fileContent: fileContent)
+    Q2(cluster: cluster)
     print("--------------------")
-    Q3(fileContent: fileContent)
+    Q3(cluster: cluster)
     print("--------------------")
-    Q4(fileContent: fileContent)
+    Q4(cluster: cluster)
 
 }
 

@@ -33,13 +33,25 @@ class Pod : CustomStringConvertible {
     }
 }
 
+enum ContainerStatus: String, CustomStringConvertible {
+    case running = "running"
+    case stopped = "stopped"
+    case paused = "paused"
+    case crashed = "crashed"
+    case unknown = "unknown"
+
+    var description: String {
+        return self.rawValue
+    }
+}
+
 class Container : CustomStringConvertible {
     var name: String
-    var status: String
+    var status: ContainerStatus
     var cpu: Int
     var ram: Int
 
-    init(name: String, status: String, cpu: Int, ram: Int) {
+    init(name: String, status: ContainerStatus, cpu: Int, ram: Int) {
         self.name = name
         self.status = status
         self.cpu = cpu
@@ -54,11 +66,18 @@ class Container : CustomStringConvertible {
 func parseContainerStatus(line: String) -> Container {
     let containerDetails = line.replacingOccurrences(of: "Container: ", with: "").split(separator: "|")
     let containerName = containerDetails[0].split(separator: " ")[0]
-    let containerStatus = containerDetails[1].split(separator: ":")[1].trimmingCharacters(in: .whitespaces)
+    var containerStatus = containerDetails[1].split(separator: ":")[1].trimmingCharacters(in: .whitespaces)
     let containerCpu = Int(containerDetails[2].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!
     let containerRam = Int(containerDetails[3].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!
+
+    containerStatus = containerStatus.lowercased()
+
+    let status = ContainerStatus.init(rawValue: containerStatus) ?? .unknown
+    if status == .unknown {
+        print("Warning: unknown container status: \(containerStatus)")
+    }
     
-    return Container(name: String(containerName), status: String(containerStatus), cpu: containerCpu, ram: containerRam)
+    return Container(name: String(containerName), status: status, cpu: containerCpu, ram: containerRam)
 }
 
 // Récupération du statut du cluster

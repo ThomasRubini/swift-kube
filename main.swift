@@ -142,8 +142,7 @@ func parseClusterStatus(fileContent: String) -> [Node] {
     return nodes
 }
 
-// Example usage
-if let fileContent = try? String(contentsOfFile: "kube_status.txt", encoding: .utf8) {
+func Q1(fileContent: String) {
     let res = parseClusterStatus(fileContent: fileContent)
     for node in res {
         for pod in node.pods {
@@ -159,3 +158,17 @@ if let fileContent = try? String(contentsOfFile: "kube_status.txt", encoding: .u
         }
     }
 }
+
+func main() {
+    let fileContentOpt = try? String(contentsOfFile: "kube_status.txt", encoding: .utf8)
+    if fileContentOpt == nil {
+        print("Error: could not read file")
+        return
+    }
+    let fileContent = fileContentOpt!
+
+    Q1(fileContent: fileContent)
+
+}
+
+main()

@@ -28,6 +28,18 @@ class Node : CustomStringConvertible {
     var description: String {
         return "Node(id: \(id), cpu: \(cpu), ram: \(ram), pods: \(pods))"
     }
+
+    func usedResources() -> (Int, Int) {
+        var usedCPU = 0
+        var usedRAM = 0
+        for pod in pods {
+            for container in pod.containers {
+                usedCPU += container.cpu
+                usedRAM += container.ram
+            }
+        }
+        return (usedCPU, usedRAM)
+    }
     
 }
 
@@ -218,6 +230,55 @@ func Q4(cluster: Cluster) {
     }
 }
 
+struct RessourcesNeeded {
+    var cpu: Int
+    var ram: Int
+}
+
+func getRessourcesMaps() -> [String: RessourcesNeeded] {
+    return [
+        "postgres_db": RessourcesNeeded(cpu: 5, ram: 5),
+        "redis_cache": RessourcesNeeded(cpu: 2, ram: 2),
+        "kafka_broker": RessourcesNeeded(cpu: 50, ram: 50),
+    ]
+}
+
+func Q5(cluster: Cluster) {
+    for node in cluster.nodes {
+        for pod in node.pods {
+            for container in pod.containers {
+                if container.status == .crashed {
+                    // Query needed ressources for this container
+                    let ressourcesMap = getRessourcesMaps()
+                    let ressourcesNeededOpt = ressourcesMap[container.name]
+                    if ressourcesNeededOpt == nil {
+                        print("Le conteneur \(container.name) a crashé mais nous ne connaissons pas les ressources qu'il demande.")
+                        continue
+                    }
+                    let ressourcesNeeded = ressourcesNeededOpt!
+
+                    // Query node used ressources
+                    var (usedCPU, usedRAM) = node.usedResources()
+                    
+                    // Calculate needed total node ressources to run the container
+                    usedCPU -= container.cpu
+                    usedRAM -= container.ram
+                    usedCPU += ressourcesNeeded.cpu
+                    usedRAM += ressourcesNeeded.ram
+
+                    // Check if node has enough ressources
+                    if usedCPU <= node.cpu && usedRAM <= node.ram {
+                        print("Le conteneur \(container.name) a crashé mais le noeud a suffisamment de ressources pour le redémarrer.")
+                        container.status = .running
+                    } else {
+                        print("Le conteneur \(container.name) a crashé et le noeud n'a pas suffisamment de ressources pour le redémarrer.")
+                    }
+                }
+            }
+        }
+    }
+}
+
 func main() {
     let fileContentOpt = try? String(contentsOfFile: "kube_status.txt", encoding: .utf8)
     if fileContentOpt == nil {
@@ -234,6 +295,8 @@ func main() {
     Q3(cluster: cluster)
     print("--------------------")
     Q4(cluster: cluster)
+    print("--------------------")
+    Q5(cluster: cluster)
 
 }
 

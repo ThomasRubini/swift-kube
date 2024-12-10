@@ -203,6 +203,13 @@ func Q3(fileContent: String) {
     print("Nombre de conteneurs crashés: \(crashedContainers)")
 }
 
+func Q4(fileContent: String) {
+    let res = parseClusterStatus(fileContent: fileContent)
+    for node in res {
+        print("Le noeud \(node.id) a \(node.cpu) CPUs et \(node.ram) RAM disponibles.")
+    }
+}
+
 func main() {
     let fileContentOpt = try? String(contentsOfFile: "kube_status.txt", encoding: .utf8)
     if fileContentOpt == nil {
@@ -216,6 +223,8 @@ func main() {
     Q2(fileContent: fileContent)
 
     Q3(fileContent: fileContent)
+
+    Q4(fileContent: fileContent)
 
 }
 

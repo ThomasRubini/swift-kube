@@ -46,6 +46,7 @@ func parseClusterStatus(fileContent: String) -> [Node] {
             currentNode = Node(id: nodeId, cpu: 0, ram: 0, pods: [])
             nodes.append(currentNode!)
         }
+
         // Check for node resources
         else if trimmedLine.hasPrefix("Ressources:") {
             let resources = trimmedLine.replacingOccurrences(of: "Ressources: ", with: "").split(separator: "|")
@@ -54,13 +55,15 @@ func parseClusterStatus(fileContent: String) -> [Node] {
 
             currentNode!.cpu = cpu
             currentNode!.ram = ram
-        } 
+        }
+
         // Check for pod information
         else if trimmedLine.hasPrefix("Pod:") {
             let podId = Int(trimmedLine.split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!
             currentPod = Pod(id: podId, containers: [])
             currentNode!.pods.append(currentPod!)
-        } 
+        }
+
         // Check for container information
         else if trimmedLine.hasPrefix("Container:") {
             let container = parseContainerStatus(line: trimmedLine)

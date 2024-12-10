@@ -19,6 +19,16 @@ struct Container {
     var ram: Int
 }
 
+func parseContainerStatus(line: String) -> Container {
+    let containerDetails = line.replacingOccurrences(of: "Container: ", with: "").split(separator: "|")
+    let containerName = containerDetails[0].split(separator: " ")[0]
+    let containerStatus = containerDetails[1].split(separator: ":")[1].trimmingCharacters(in: .whitespaces)
+    let containerCpu = Int(containerDetails[2].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!
+    let containerRam = Int(containerDetails[3].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!
+    
+    return Container(name: String(containerName), status: String(containerStatus), cpu: containerCpu, ram: containerRam)
+}
+
 // Récupération du statut du cluster
 func parseClusterStatus(fileContent: String) -> [Node] {
 
@@ -35,7 +45,7 @@ func parseClusterStatus(fileContent: String) -> [Node] {
 
             currentNode = Node(id: nodeId, cpu: 0, ram: 0, pods: [])
             nodes.append(currentNode!)
-        } 
+        }
         // Check for node resources
         else if trimmedLine.hasPrefix("Ressources:") {
             let resources = trimmedLine.replacingOccurrences(of: "Ressources: ", with: "").split(separator: "|")
@@ -53,13 +63,7 @@ func parseClusterStatus(fileContent: String) -> [Node] {
         } 
         // Check for container information
         else if trimmedLine.hasPrefix("Container:") {
-            let containerDetails = trimmedLine.replacingOccurrences(of: "Container: ", with: "").split(separator: "|")
-            let containerName = containerDetails[0].split(separator: " ")[0]
-            let containerStatus = containerDetails[1].split(separator: ":")[1].trimmingCharacters(in: .whitespaces)
-            let containerCpu = Int(containerDetails[2].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!
-            let containerRam = Int(containerDetails[3].split(separator: ":")[1].trimmingCharacters(in: .whitespaces))!
-            
-            let container = Container(name: String(containerName), status: String(containerStatus), cpu: containerCpu, ram: containerRam)
+            let container = parseContainerStatus(line: trimmedLine)
             currentPod!.containers.append(container)
         }
     }

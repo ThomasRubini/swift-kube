@@ -159,6 +159,21 @@ func Q1(fileContent: String) {
     }
 }
 
+func Q2(fileContent: String) {
+    let res = parseClusterStatus(fileContent: fileContent)
+    for node in res {
+        for pod in node.pods {
+            var totalCpu = 0
+            var totalRam = 0
+            for container in pod.containers {
+                totalCpu += container.cpu
+                totalRam += container.ram
+            }
+            print("Le pod \(pod.id) sur le noeud \(node.id) utilise \(totalCpu) CPUs et \(totalRam) RAM.")
+        }
+    }
+}
+
 func main() {
     let fileContentOpt = try? String(contentsOfFile: "kube_status.txt", encoding: .utf8)
     if fileContentOpt == nil {
@@ -168,6 +183,8 @@ func main() {
     let fileContent = fileContentOpt!
 
     Q1(fileContent: fileContent)
+
+    Q2(fileContent: fileContent)
 
 }
 

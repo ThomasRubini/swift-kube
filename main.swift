@@ -10,6 +10,16 @@ class Cluster : CustomStringConvertible {
     var description: String {
         return "Cluster(nodes: \(nodes))"
     }
+
+    func getContainers() -> [Container] {
+        var containers = [Container]()
+        for node in nodes {
+            for pod in node.pods {
+                containers.append(contentsOf: pod.containers)
+            }
+        }
+        return containers
+    }
 }
 
 class Node : CustomStringConvertible {
@@ -279,31 +289,16 @@ func Q5(cluster: Cluster) {
     }
 }
 
-func getContainersFiltered(cluster: Cluster, predicate : (Container) -> Bool) -> [Container] {
-    var containers = [Container]()
-    for node in cluster.nodes {
-        for pod in node.pods {
-            for container in pod.containers {
-                if predicate(container) {
-                    containers.append(container)
-                }
-            }
-        }
-    }
-    return containers
-}
-
 func Q6(cluster: Cluster, wantedType: String) {
-    let containers = getContainersFiltered(cluster: cluster, predicate: { container in
+    let containers = cluster.getContainers().filter({ container in
         return container.name == wantedType
     })
-
 
     print("Nombre de conteneurs de type \(wantedType): \(containers.count)")
 }
 
 func Q7(cluster: Cluster, wantedType: String) {
-    let containers = getContainersFiltered(cluster: cluster, predicate: { container in
+    let containers = cluster.getContainers().filter({ container in
         return container.name == wantedType
     })
 

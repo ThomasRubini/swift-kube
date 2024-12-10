@@ -174,6 +174,35 @@ func Q2(fileContent: String) {
     }
 }
 
+func Q3(fileContent: String) {
+    let res = parseClusterStatus(fileContent: fileContent)
+    var runningContainers = 0
+    var stoppedContainers = 0
+    var crashedContainers = 0
+
+    for node in res {
+        for pod in node.pods {
+            for container in pod.containers {
+                switch container.status {
+                case .running:
+                    runningContainers += 1
+                case .stopped:
+                    stoppedContainers += 1
+                case .crashed:
+                    crashedContainers += 1
+                default:
+                    break
+                }
+            }
+        }
+    }
+
+    print("Résumé global du cluster:")
+    print("Nombre total de conteneurs en cours d'exécution: \(runningContainers)")
+    print("Nombre de conteneurs arrêtés: \(stoppedContainers)")
+    print("Nombre de conteneurs crashés: \(crashedContainers)")
+}
+
 func main() {
     let fileContentOpt = try? String(contentsOfFile: "kube_status.txt", encoding: .utf8)
     if fileContentOpt == nil {
@@ -185,6 +214,8 @@ func main() {
     Q1(fileContent: fileContent)
 
     Q2(fileContent: fileContent)
+
+    Q3(fileContent: fileContent)
 
 }
 

@@ -302,6 +302,21 @@ func Q6(cluster: Cluster, wantedType: String) {
     print("Nombre de conteneurs de type \(wantedType): \(containers.count)")
 }
 
+func Q7(cluster: Cluster, wantedType: String) {
+    let containers = getContainersFiltered(cluster: cluster, predicate: { container in
+        return container.name == wantedType
+    })
+
+    var totalCpu = 0
+    var totalRam = 0
+    for container in containers {
+        totalCpu += container.cpu
+        totalRam += container.ram
+    }
+
+    print("Ressources totales utilisées par les conteneurs de type \(wantedType): \(totalCpu) CPUs et \(totalRam) RAM.")
+}
+
 func main() {
     let fileContentOpt = try? String(contentsOfFile: "kube_status.txt", encoding: .utf8)
     if fileContentOpt == nil {
@@ -322,6 +337,8 @@ func main() {
     Q5(cluster: cluster)
     print("--------------------")
     Q6(cluster: cluster, wantedType: "postgres_db")
+    print("--------------------")
+    Q7(cluster: cluster, wantedType: "postgres_db")
 
 }
 

@@ -219,11 +219,11 @@ func main() {
     let fileContent = fileContentOpt!
 
     Q1(fileContent: fileContent)
-
+    print("--------------------")
     Q2(fileContent: fileContent)
-
+    print("--------------------")
     Q3(fileContent: fileContent)
-
+    print("--------------------")
     Q4(fileContent: fileContent)
 
 }

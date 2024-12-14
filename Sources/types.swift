@@ -9,6 +9,7 @@ class Cluster : CustomStringConvertible {
         return "Cluster(nodes: \(nodes))"
     }
 
+    // Get containers from all nodes
     func getContainers() -> [Container] {
         var containers = [Container]()
         for node in nodes {
@@ -19,6 +20,7 @@ class Cluster : CustomStringConvertible {
         return containers
     }
 
+    // Get containers from all nodes, with context (node and pod)
     func getContainersFull() -> [(Node, Pod, Container)] {
         var containers = [(Node, Pod, Container)]()
         for node in nodes {
